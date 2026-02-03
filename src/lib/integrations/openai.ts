@@ -183,7 +183,7 @@ export class AIInsightsService {
         actionRequired: true,
         priority: 'urgent',
         expectedOutcome: 'Reduce CPI by 20-30%',
-        timeframe: '2 weeks',
+        timeframe: '1-2 weeks',
         timestamp: new Date().toISOString()
       })
     }
