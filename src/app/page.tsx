@@ -181,9 +181,8 @@ export default function Dashboard() {
       }
       
       // Generate realistic recent activity based on real data
-      const recentActivities = []
+      const recentActivities: ActivityItem[] = []
       const countries = ['Australia', 'United States', 'United Kingdom', 'Canada']
-      const now = new Date()
       
       // Add recent downloads
       for (let i = 0; i < 3; i++) {
@@ -191,7 +190,7 @@ export default function Dashboard() {
         const country = countries[Math.floor(Math.random() * countries.length)]
         recentActivities.push({
           id: `download-${i}`,
-          type: 'download',
+          type: 'download' as const,
           description: `New app download from ${country}`,
           timestamp: `${minutesAgo} minutes ago`
         })
@@ -202,7 +201,7 @@ export default function Dashboard() {
         const hoursAgo = Math.floor(Math.random() * 6) + 1
         recentActivities.push({
           id: `signup-${i}`,
-          type: 'signup',
+          type: 'signup' as const,
           description: 'User completed signup process',
           timestamp: `${hoursAgo} hours ago`
         })
@@ -308,9 +307,9 @@ export default function Dashboard() {
       ])
       
       setActivities([
-        { id: '1', type: 'download', description: 'New app download from Australia', timestamp: '5 minutes ago' },
-        { id: '2', type: 'signup', description: 'User completed signup process', timestamp: '1 hour ago' },
-        { id: '3', type: 'download', description: 'New app download from United States', timestamp: '2 hours ago' }
+        { id: '1', type: 'download' as const, description: 'New app download from Australia', timestamp: '5 minutes ago' },
+        { id: '2', type: 'signup' as const, description: 'User completed signup process', timestamp: '1 hour ago' },
+        { id: '3', type: 'download' as const, description: 'New app download from United States', timestamp: '2 hours ago' }
       ])
       
       setInsights([
