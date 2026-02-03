@@ -232,6 +232,7 @@ export default function Dashboard() {
         setInsights(aiData.data || [])
       } else {
         // Generate realistic AI insights based on real data
+        const retentionRate = data.retentionDay30 || 23.8
         const realInsights: AIInsight[] = [
           {
             id: '1',
@@ -255,9 +256,9 @@ export default function Dashboard() {
             id: '3',
             type: 'alert' as const,
             title: 'Monitor Retention Rate',
-            description: `Current 30-day retention rate of ${data.retentionDay30 || 23.8}% is below industry average of 25%. Consider implementing engagement campaigns.`,
-            impact: (data.retentionDay30 < 25 ? 'high' : 'medium') as const,
-            actionRequired: data.retentionDay30 < 25,
+            description: `Current 30-day retention rate of ${retentionRate}% is below industry average of 25%. Consider implementing engagement campaigns.`,
+            impact: retentionRate < 25 ? 'high' as const : 'medium' as const,
+            actionRequired: retentionRate < 25,
             timestamp: new Date().toISOString()
           }
         ]
