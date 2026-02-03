@@ -425,7 +425,7 @@ export default function Dashboard() {
 
       case 'instagram':
         return <InstagramDashboard 
-          metrics={instagramMetrics} 
+          metrics={instagramMetrics || undefined} 
           isConnected={instagramConnected}
           onConnect={handleInstagramConnect}
         />
