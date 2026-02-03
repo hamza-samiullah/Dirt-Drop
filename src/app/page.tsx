@@ -232,31 +232,31 @@ export default function Dashboard() {
         setInsights(aiData.data || [])
       } else {
         // Generate realistic AI insights based on real data
-        const realInsights = [
+        const realInsights: AIInsight[] = [
           {
             id: '1',
-            type: 'trend',
+            type: 'trend' as const,
             title: 'Strong Australian Market Performance',
             description: `Australia represents ${Math.round((data.topCountries?.[0]?.percentage || 59))}% of your total downloads (${data.topCountries?.[0]?.installs || Math.floor(totalInstalls * 0.59)} installs). This indicates strong local market penetration.`,
-            impact: 'medium',
+            impact: 'medium' as const,
             actionRequired: false,
             timestamp: new Date().toISOString()
           },
           {
             id: '2',
-            type: 'recommendation',
+            type: 'recommendation' as const,
             title: 'Optimize User Acquisition Cost',
             description: `With ${totalInstalls} total installs and $${totalRevenue} revenue, your current LTV/CAC ratio suggests room for increased marketing spend in high-performing channels.`,
-            impact: 'high',
+            impact: 'high' as const,
             actionRequired: true,
             timestamp: new Date().toISOString()
           },
           {
             id: '3',
-            type: 'alert',
+            type: 'alert' as const,
             title: 'Monitor Retention Rate',
             description: `Current 30-day retention rate of ${data.retentionDay30 || 23.8}% is below industry average of 25%. Consider implementing engagement campaigns.`,
-            impact: data.retentionDay30 < 25 ? 'high' : 'medium',
+            impact: (data.retentionDay30 < 25 ? 'high' : 'medium') as const,
             actionRequired: data.retentionDay30 < 25,
             timestamp: new Date().toISOString()
           }
@@ -315,10 +315,10 @@ export default function Dashboard() {
       setInsights([
         {
           id: '1',
-          type: 'trend',
+          type: 'trend' as const,
           title: 'Strong Australian Market Performance',
           description: 'Australia represents 59% of your total downloads. This indicates strong local market penetration.',
-          impact: 'medium',
+          impact: 'medium' as const,
           actionRequired: false,
           timestamp: new Date().toISOString()
         }
