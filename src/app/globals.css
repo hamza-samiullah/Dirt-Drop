@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-neutral-50 text-neutral-900 font-sans;
+  }
+}
+
+@layer components {
+  .metric-card {
+    @apply bg-white rounded-xl p-6 shadow-custom border border-neutral-200 hover:shadow-custom-lg transition-all duration-200;
+  }
+  
+  .sidebar-item {
+    @apply flex items-center px-4 py-3 text-neutral-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 cursor-pointer;
+  }
+  
+  .sidebar-item.active {
+    @apply text-primary-700 bg-primary-50 border-r-2 border-primary-600;
+  }
+  
+  .chart-container {
+    @apply bg-white rounded-xl p-6 shadow-custom border border-neutral-200;
+  }
+  
+  .ai-insight-card {
+    @apply bg-gradient-to-br from-primary-50 to-secondary-50 rounded-xl p-6 border border-primary-200 shadow-custom;
+  }
+  
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-badge.success {
+    @apply bg-secondary-100 text-secondary-800;
+  }
+  
+  .status-badge.warning {
+    @apply bg-accent-100 text-accent-800;
+  }
+  
+  .status-badge.error {
+    @apply bg-red-100 text-red-800;
+  }
+}
