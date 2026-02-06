@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Upload, Image, Video, Calendar, Check, X, RefreshCw } from 'lucide-react'
+import { Upload, Image, Video, Calendar, Check, X, RefreshCw, Plus } from 'lucide-react'
 
 interface ContentItem {
   id: string
@@ -20,6 +20,7 @@ export default function ContentManager() {
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null)
   const [caption, setCaption] = useState('')
   const [scheduledTime, setScheduledTime] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     loadContent()
@@ -37,6 +38,40 @@ export default function ContentManager() {
       console.error('Error loading content:', error)
     }
     setLoading(false)
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      alert('Please upload an image or video file')
+      return
+    }
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/content', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        alert('✅ File uploaded successfully!')
+        loadContent()
+      } else {
+        alert('❌ Failed to upload file')
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error)
+      alert('❌ Error uploading file')
+    }
+    setUploading(false)
+    event.target.value = ''
   }
 
   const approveAndPost = async (item: ContentItem) => {
@@ -85,20 +120,33 @@ export default function ContentManager() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900">Content Manager</h2>
-            <p className="text-neutral-600 mt-1">Upload and manage Instagram posts from Google Drive</p>
+            <p className="text-neutral-600 mt-1">Upload and manage Instagram posts</p>
           </div>
-          <button
-            onClick={loadContent}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4 inline mr-2" />
-            Refresh
-          </button>
+          <div className="flex space-x-3">
+            <label className="px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors cursor-pointer">
+              <Plus className="w-4 h-4 inline mr-2" />
+              {uploading ? 'Uploading...' : 'Upload File'}
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={handleFileUpload}
+                disabled={uploading}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={loadContent}
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4 inline mr-2" />
+              Refresh
+            </button>
+          </div>
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <p className="text-sm text-blue-800">
-            📁 <strong>Upload files to Google Drive</strong> in the configured folder, then refresh to see them here.
+            📸 <strong>Upload files directly</strong> or add them to Google Drive folder to see them here.
           </p>
         </div>
 

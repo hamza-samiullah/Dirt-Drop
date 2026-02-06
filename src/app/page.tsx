@@ -7,6 +7,7 @@ import AIInsights from '@/components/dashboard/AIInsights'
 import RecentActivity from '@/components/dashboard/RecentActivity'
 import InstagramDashboard from '@/components/dashboard/InstagramDashboard'
 import ContentManager from '@/components/dashboard/ContentManager'
+import InstagramPerformance from '@/components/dashboard/InstagramPerformance'
 import { DownloadsChart, RevenueChart, GeographicChart, DeviceChart } from '@/components/charts/Charts'
 
 import { AppMetrics, ChartData, GeographicData, DeviceData, AIInsight, ActivityItem } from '@/types/dashboard'
@@ -433,6 +434,9 @@ export default function Dashboard() {
 
       case 'content':
         return <ContentManager />
+
+      case 'performance':
+        return <InstagramPerformance />
 
       case 'ai-insights':
         return (

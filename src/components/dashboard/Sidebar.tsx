@@ -12,7 +12,8 @@ import {
   DollarSign,
   Menu,
   X,
-  FolderOpen
+  FolderOpen,
+  LineChart
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ const menuItems = [
   { id: 'overview', label: 'Overview', icon: Home },
   { id: 'analytics', label: 'App Analytics', icon: BarChart3 },
   { id: 'content', label: 'Content Manager', icon: FolderOpen },
+  { id: 'performance', label: 'IG Performance', icon: LineChart },
   { id: 'instagram', label: 'Instagram', icon: Instagram },
   { id: 'campaigns', label: 'Campaigns', icon: TrendingUp },
   { id: 'users', label: 'Users', icon: Users },

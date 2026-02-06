@@ -24,7 +24,10 @@ export class GoogleDriveService {
         client_email: process.env.GOOGLE_DRIVE_CLIENT_EMAIL,
         private_key: process.env.GOOGLE_DRIVE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
       },
-      scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+      scopes: [
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive'
+      ],
     })
 
     this.drive = google.drive({ version: 'v3', auth })
@@ -55,6 +58,39 @@ export class GoogleDriveService {
     } catch (error) {
       console.error('Error fetching from Google Drive:', error)
       return []
+    }
+  }
+
+  static async uploadFile(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+    try {
+      const drive = await this.getDriveClient()
+      const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID
+
+      const response = await drive.files.create({
+        requestBody: {
+          name: fileName,
+          parents: [folderId],
+          mimeType: mimeType,
+        },
+        media: {
+          mimeType: mimeType,
+          body: Buffer.from(fileBuffer),
+        },
+        fields: 'id, webViewLink',
+      })
+
+      await drive.permissions.create({
+        fileId: response.data.id,
+        requestBody: {
+          role: 'reader',
+          type: 'anyone',
+        },
+      })
+
+      return response.data.id
+    } catch (error) {
+      console.error('Error uploading to Google Drive:', error)
+      throw error
     }
   }
 

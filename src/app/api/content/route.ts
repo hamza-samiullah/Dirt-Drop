@@ -15,6 +15,22 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const contentType = request.headers.get('content-type')
+    
+    if (contentType?.includes('multipart/form-data')) {
+      const formData = await request.formData()
+      const file = formData.get('file') as File
+      
+      if (!file) {
+        return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 })
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer())
+      const fileId = await GoogleDriveService.uploadFile(buffer, file.name, file.type)
+      
+      return NextResponse.json({ success: true, fileId, message: 'File uploaded successfully' })
+    }
+
     const body = await request.json()
     const { action, fileId, caption, scheduledTime } = body
 
