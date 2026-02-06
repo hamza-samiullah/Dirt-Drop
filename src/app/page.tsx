@@ -6,6 +6,7 @@ import MetricCards from '@/components/dashboard/MetricCards'
 import AIInsights from '@/components/dashboard/AIInsights'
 import RecentActivity from '@/components/dashboard/RecentActivity'
 import InstagramDashboard from '@/components/dashboard/InstagramDashboard'
+import ContentManager from '@/components/dashboard/ContentManager'
 import { DownloadsChart, RevenueChart, GeographicChart, DeviceChart } from '@/components/charts/Charts'
 
 import { AppMetrics, ChartData, GeographicData, DeviceData, AIInsight, ActivityItem } from '@/types/dashboard'
@@ -429,6 +430,9 @@ export default function Dashboard() {
           isConnected={instagramConnected}
           onConnect={handleInstagramConnect}
         />
+
+      case 'content':
+        return <ContentManager />
 
       case 'ai-insights':
         return (

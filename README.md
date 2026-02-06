@@ -74,6 +74,10 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed Vercel deployment instructions
 
 See [Make_com_Instagram_Automation_Guide.md](./Make_com_Instagram_Automation_Guide.md) for complete setup.
 
+## 📸 Content Management
+
+See [Content_Management_Guide.md](./Content_Management_Guide.md) for Google Drive integration and content approval workflow.
+
 ## 🔧 Environment Variables
 
 Copy `.env.local` and update with your credentials:
