@@ -162,10 +162,16 @@ export default function AIInsights({ insights }: AIInsightsProps) {
             
             {insight.actionRequired && (
               <div className="flex space-x-3">
-                <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 text-sm font-medium">
+                <button 
+                  onClick={() => alert(`Taking action on: ${insight.title}\n\nThis would typically:\n- Open a detailed action plan\n- Connect to relevant tools\n- Track implementation progress`)}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 text-sm font-medium"
+                >
                   Take Action
                 </button>
-                <button className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors duration-200 text-sm font-medium">
+                <button 
+                  onClick={() => alert(`Learn more about: ${insight.title}\n\n${insight.description}\n\nExpected Outcome: ${insight.expectedOutcome || 'Improved performance'}\n\nThis would typically open detailed documentation and best practices.`)}
+                  className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors duration-200 text-sm font-medium"
+                >
                   Learn More
                 </button>
               </div>
@@ -187,15 +193,24 @@ export default function AIInsights({ insights }: AIInsightsProps) {
         <div className="bg-gradient-to-r from-primary-600 to-secondary-600 rounded-xl p-6 text-white">
           <h3 className="text-lg font-semibold mb-3">Quick Actions Based on AI Analysis</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-3 text-left transition-all duration-200">
+            <button 
+              onClick={() => alert('Optimize Campaigns\n\nThis would:\n- Review campaign performance\n- Identify underperforming ads\n- Suggest budget reallocation\n- A/B test recommendations')}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-3 text-left transition-all duration-200"
+            >
               <div className="font-medium">Optimize Campaigns</div>
               <div className="text-sm opacity-90">Review and adjust underperforming campaigns</div>
             </button>
-            <button className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-3 text-left transition-all duration-200">
+            <button 
+              onClick={() => alert('Improve Retention\n\nThis would:\n- Analyze user drop-off points\n- Implement push notifications\n- Create engagement campaigns\n- Improve onboarding flow')}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-3 text-left transition-all duration-200"
+            >
               <div className="font-medium">Improve Retention</div>
               <div className="text-sm opacity-90">Implement user engagement strategies</div>
             </button>
-            <button className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-3 text-left transition-all duration-200">
+            <button 
+              onClick={() => alert('Expand Markets\n\nThis would:\n- Identify high-potential regions\n- Localize app content\n- Target new demographics\n- Analyze competitor presence')}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-3 text-left transition-all duration-200"
+            >
               <div className="font-medium">Expand Markets</div>
               <div className="text-sm opacity-90">Target high-potential geographic regions</div>
             </button>
