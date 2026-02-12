@@ -11,32 +11,33 @@ interface InstagramDashboardProps {
 export default function InstagramDashboard({ metrics }: InstagramDashboardProps) {
   const [contentSuggestions, setContentSuggestions] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+  const [posts, setPosts] = useState<any[]>([])
+  const [stats, setStats] = useState<any>(null)
 
   useEffect(() => {
-    if (metrics) {
-      generateContentSuggestions()
+    loadInstagramData()
+  }, [])
+
+  const loadInstagramData = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/instagram-analytics')
+      const data = await response.json()
+      
+      if (data.success) {
+        setPosts(data.posts || [])
+        setStats(data.stats || {})
+        setContentSuggestions(data.recommendations || [])
+      }
+    } catch (error) {
+      console.error('Error loading Instagram data:', error)
     }
-  }, [metrics])
+    setLoading(false)
+  }
 
   const generateContentSuggestions = async () => {
     setLoading(true)
-    try {
-      const response = await fetch('/api/ai-insights', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          type: 'content',
-          instagramData: metrics 
-        })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setContentSuggestions(data.data || [])
-      }
-    } catch (error) {
-      console.error('Error generating content suggestions:', error)
-    }
+    await loadInstagramData()
     setLoading(false)
   }
 
@@ -57,16 +58,16 @@ export default function InstagramDashboard({ metrics }: InstagramDashboardProps)
       </div>
 
       {/* Metrics Cards */}
-      {metrics && (
+      {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="metric-card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600 mb-1">Followers</p>
-                <p className="text-2xl font-bold text-neutral-900">{metrics.followers.toLocaleString()}</p>
+                <p className="text-sm font-medium text-neutral-600 mb-1">Total Posts</p>
+                <p className="text-2xl font-bold text-neutral-900">{stats.totalPosts || 0}</p>
               </div>
               <div className="p-3 rounded-xl bg-pink-100">
-                <Users className="w-6 h-6 text-pink-600" />
+                <Instagram className="w-6 h-6 text-pink-600" />
               </div>
             </div>
           </div>
@@ -74,8 +75,8 @@ export default function InstagramDashboard({ metrics }: InstagramDashboardProps)
           <div className="metric-card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600 mb-1">Engagement Rate</p>
-                <p className="text-2xl font-bold text-neutral-900">{metrics.engagement.toFixed(1)}%</p>
+                <p className="text-sm font-medium text-neutral-600 mb-1">Avg Engagement</p>
+                <p className="text-2xl font-bold text-neutral-900">{stats.avgEngagement?.toFixed(1) || 0}%</p>
               </div>
               <div className="p-3 rounded-xl bg-red-100">
                 <Heart className="w-6 h-6 text-red-600" />
@@ -86,11 +87,11 @@ export default function InstagramDashboard({ metrics }: InstagramDashboardProps)
           <div className="metric-card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600 mb-1">Reach</p>
-                <p className="text-2xl font-bold text-neutral-900">{metrics.reach.toLocaleString()}</p>
+                <p className="text-sm font-medium text-neutral-600 mb-1">Total Likes</p>
+                <p className="text-2xl font-bold text-neutral-900">{stats.totalLikes || 0}</p>
               </div>
               <div className="p-3 rounded-xl bg-blue-100">
-                <Eye className="w-6 h-6 text-blue-600" />
+                <Heart className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </div>
@@ -98,8 +99,8 @@ export default function InstagramDashboard({ metrics }: InstagramDashboardProps)
           <div className="metric-card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600 mb-1">Posts This Week</p>
-                <p className="text-2xl font-bold text-neutral-900">{metrics.postsThisWeek}</p>
+                <p className="text-sm font-medium text-neutral-600 mb-1">Total Comments</p>
+                <p className="text-2xl font-bold text-neutral-900">{stats.totalComments || 0}</p>
               </div>
               <div className="p-3 rounded-xl bg-green-100">
                 <TrendingUp className="w-6 h-6 text-green-600" />
@@ -148,26 +149,58 @@ export default function InstagramDashboard({ metrics }: InstagramDashboardProps)
           <h3 className="text-lg font-semibold text-neutral-900 mb-4">Top Performing Posts</h3>
           
           <div className="space-y-4">
-            {metrics?.topPosts.map((post) => (
-              <div key={post.id} className="p-4 border border-neutral-200 rounded-lg">
-                <p className="text-sm text-neutral-700 mb-2 line-clamp-2">
-                  {post.caption || 'No caption'}
-                </p>
-                <div className="flex items-center justify-between text-xs text-neutral-500">
-                  <div className="flex items-center space-x-4">
-                    <span>{post.likes} likes</span>
-                    <span>{post.comments} comments</span>
+            {posts.slice(0, 5).map((post) => (
+              <div key={post.id} className="flex items-start space-x-3 p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
+                {post.media_url && post.media_type !== 'VIDEO' && (
+                  <img 
+                    src={post.media_url} 
+                    alt="Post" 
+                    className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2"%3E%3Crect x="3" y="3" width="18" height="18" rx="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpath d="m21 15-5-5L5 21"%3E%3C/path%3E%3C/svg%3E'
+                    }}
+                  />
+                )}
+                {post.media_type === 'VIDEO' && (
+                  <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
-                  <button className="text-primary-600 hover:text-primary-700">
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-neutral-700 line-clamp-2 mb-2">
+                    {post.caption || 'No caption'}
+                  </p>
+                  <div className="flex items-center space-x-4 text-xs text-neutral-500">
+                    <span>❤️ {post.like_count}</span>
+                    <span>💬 {post.comments_count}</span>
+                    <span>📊 {post.engagement_rate.toFixed(1)}%</span>
+                  </div>
                 </div>
+                {post.permalink && (
+                  <a 
+                    href={post.permalink} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary-600 hover:text-primary-700 flex-shrink-0"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
               </div>
             ))}
             
-            {(!metrics?.topPosts || metrics.topPosts.length === 0) && (
-              <p className="text-neutral-500 text-center py-4">
-                No posts data available
+            {posts.length === 0 && !loading && (
+              <p className="text-neutral-500 text-center py-8">
+                No posts yet. Start posting to see analytics!
+              </p>
+            )}
+            
+            {loading && (
+              <p className="text-neutral-500 text-center py-8">
+                Loading posts...
               </p>
             )}
           </div>
