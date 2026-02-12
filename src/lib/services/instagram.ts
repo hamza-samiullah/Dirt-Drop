@@ -79,6 +79,26 @@ export class InstagramService {
     }
   }
 
+  static async deletePost(postId: string, accessToken: string) {
+    try {
+      const response = await fetch(
+        `https://graph.facebook.com/v18.0/${postId}?access_token=${accessToken}`,
+        { method: 'DELETE' }
+      )
+
+      const data = await response.json()
+      
+      if (data.error) {
+        throw new Error(data.error.message)
+      }
+
+      return { success: true }
+    } catch (error: any) {
+      console.error('Error deleting post:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
   static async publishReel(videoUrl: string, caption: string, accessToken: string, businessAccountId: string) {
     try {
       // Check if URL is publicly accessible

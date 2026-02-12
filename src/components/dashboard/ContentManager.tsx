@@ -244,11 +244,23 @@ export default function ContentManager() {
                       src={item.url}
                       alt={item.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23f3f4f6" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="sans-serif" font-size="12"%3EImage%3C/text%3E%3C/svg%3E'
+                      }}
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Video className="w-16 h-16 text-neutral-400" />
-                    </div>
+                    <video
+                      src={item.url}
+                      className="w-full h-full object-cover"
+                      muted
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                        const parent = e.currentTarget.parentElement
+                        if (parent) {
+                          parent.innerHTML = '<div class="flex items-center justify-center h-full"><svg class="w-16 h-16 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>'
+                        }
+                      }}
+                    />
                   )}
                   <div className="absolute top-2 right-2 flex space-x-2">
                     {item.mimeType.includes('image') ? (
@@ -299,9 +311,11 @@ export default function ContentManager() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <Video className="w-24 h-24 text-neutral-400" />
-                  </div>
+                  <video
+                    src={selectedItem.url}
+                    controls
+                    className="w-full h-full object-cover"
+                  />
                 )}
               </div>
 

@@ -136,7 +136,16 @@ export default function InstagramPerformance() {
 
       {/* Recent Posts Performance */}
       <div className="bg-white rounded-xl p-6 shadow-custom border border-neutral-200">
-        <h3 className="text-lg font-semibold text-neutral-900 mb-4">Recent Posts Performance</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-neutral-900">Recent Posts Performance</h3>
+          <button
+            onClick={loadAnalytics}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm"
+          >
+            <RefreshCw className="w-4 h-4 inline mr-2" />
+            Refresh
+          </button>
+        </div>
         {posts.length === 0 ? (
           <div className="text-center py-8">
             <Eye className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
@@ -145,11 +154,14 @@ export default function InstagramPerformance() {
         ) : (
           <div className="space-y-4">
             {posts.slice(0, 5).map((post) => (
-              <div key={post.id} className="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors">
+              <div key={post.id} className="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors group">
                 <img
                   src={post.media_url}
                   alt="Post"
                   className="w-20 h-20 object-cover rounded-lg"
+                  onError={(e) => {
+                    e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23f3f4f6" width="80" height="80"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="sans-serif" font-size="10"%3EImage%3C/text%3E%3C/svg%3E'
+                  }}
                 />
                 <div className="flex-1">
                   <p className="text-sm text-neutral-700 line-clamp-2">{post.caption}</p>
@@ -170,6 +182,33 @@ export default function InstagramPerformance() {
                     <TrendingUp className="w-4 h-4 text-green-500 mx-auto mb-1" />
                     <span className="font-medium">{post.engagement_rate.toFixed(1)}%</span>
                   </div>
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      if (!confirm('Delete this post from Instagram?')) return
+                      
+                      try {
+                        const response = await fetch('/api/instagram-delete', {
+                          method: 'DELETE',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ postId: post.id })
+                        })
+                        
+                        const data = await response.json()
+                        if (data.success) {
+                          alert('✅ Post deleted from Instagram')
+                          loadAnalytics()
+                        } else {
+                          alert(`❌ ${data.error}`)
+                        }
+                      } catch (error) {
+                        alert('❌ Failed to delete post')
+                      }
+                    }}
+                    className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
