@@ -107,14 +107,18 @@ export async function POST(request: NextRequest) {
         }, { status: 400 })
       }
 
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+      const baseUrl = process.env.NEXTAUTH_URL || request.headers.get('origin') || 'http://localhost:3000'
       const mediaUrl = `${baseUrl}/uploads/${fileId}`
       const isVideo = /\.(mp4|mov|avi)$/i.test(fileId)
+      
+      console.log('Posting to Instagram:', { mediaUrl, isVideo, caption })
       
       // Post directly to Instagram
       const result = isVideo 
         ? await InstagramService.publishReel(mediaUrl, caption, accessToken, businessAccountId)
         : await InstagramService.publishPhoto(mediaUrl, caption, accessToken, businessAccountId)
+
+      console.log('Instagram result:', result)
 
       if (!result.success) {
         return NextResponse.json({ 

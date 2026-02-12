@@ -1,11 +1,13 @@
 export class InstagramService {
   static async publishPhoto(imageUrl: string, caption: string, accessToken: string, businessAccountId: string) {
     try {
+      console.log('Publishing photo:', { imageUrl, caption, businessAccountId })
+      
       // Check if URL is publicly accessible
       if (imageUrl.includes('localhost') || imageUrl.includes('127.0.0.1')) {
         return { 
           success: false, 
-          error: 'Instagram requires publicly accessible URLs. Deploy to Vercel or use ngrok for testing.' 
+          error: 'Instagram requires publicly accessible URLs. Deploy to Render or use ngrok for testing.' 
         }
       }
 
@@ -24,7 +26,12 @@ export class InstagramService {
       )
 
       const containerData = await containerResponse.json()
-      if (containerData.error) throw new Error(containerData.error.message)
+      console.log('Container response:', containerData)
+      
+      if (containerData.error) {
+        console.error('Container error:', containerData.error)
+        throw new Error(containerData.error.message)
+      }
 
       const creationId = containerData.id
 
@@ -42,7 +49,12 @@ export class InstagramService {
       )
 
       const publishData = await publishResponse.json()
-      if (publishData.error) throw new Error(publishData.error.message)
+      console.log('Publish response:', publishData)
+      
+      if (publishData.error) {
+        console.error('Publish error:', publishData.error)
+        throw new Error(publishData.error.message)
+      }
 
       return { success: true, postId: publishData.id }
     } catch (error: any) {
