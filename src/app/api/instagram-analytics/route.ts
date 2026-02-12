@@ -6,15 +6,63 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const accessToken = request.headers.get('authorization')?.replace('Bearer ', '')
-    const businessAccountId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || ''
+    const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN
+    const businessAccountId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID
     
-    if (!accessToken) {
-      return NextResponse.json({ success: false, error: 'No access token' }, { status: 401 })
+    if (!accessToken || !businessAccountId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Instagram credentials not configured' 
+      }, { status: 401 })
     }
 
-    const posts = await InstagramAnalyticsService.getRecentPosts(accessToken, businessAccountId, 10)
-    const recommendations = await InstagramAnalyticsService.generateAIRecommendations(posts)
+    console.log('Fetching Instagram posts for:', businessAccountId)
+
+    // Fetch recent posts from Instagram
+    const postsResponse = await fetch(
+      `https://graph.facebook.com/v18.0/${businessAccountId}/media?fields=id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count&limit=25&access_token=${accessToken}`
+    )
+
+    const postsData = await postsResponse.json()
+    console.log('Instagram API response:', postsData)
+
+    if (postsData.error) {
+      console.error('Instagram API error:', postsData.error)
+      return NextResponse.json({ 
+        success: false, 
+        error: postsData.error.message 
+      }, { status: 500 })
+    }
+
+    const posts = (postsData.data || []).map((post: any) => ({
+      id: post.id,
+      caption: post.caption || '',
+      media_type: post.media_type,
+      media_url: post.media_url,
+      permalink: post.permalink,
+      timestamp: post.timestamp,
+      like_count: post.like_count || 0,
+      comments_count: post.comments_count || 0,
+      engagement_rate: post.like_count && post.comments_count 
+        ? ((post.like_count + post.comments_count) / 100) * 100 
+        : 0
+    }))
+
+    const recommendations = posts.length > 0 
+      ? [
+          `Your top post has ${posts[0]?.like_count || 0} likes. Try posting similar content!`,
+          `Post during peak hours (6-9 PM) for better engagement`,
+          `Use 5-10 relevant hashtags per post`,
+          `Engage with comments within the first hour of posting`,
+          `Post consistently 3-5 times per week`
+        ]
+      : [
+          `Start posting content to see analytics`,
+          `Use AI caption generation for better engagement`,
+          `Post during peak hours (6-9 PM)`,
+          `Include relevant hashtags`,
+          `Engage with your audience`
+        ]
 
     return NextResponse.json({ 
       success: true, 
@@ -22,14 +70,19 @@ export async function GET(request: NextRequest) {
       recommendations,
       stats: {
         totalPosts: posts.length,
-        avgEngagement: posts.length > 0 ? posts.reduce((sum, p) => sum + p.engagement_rate, 0) / posts.length : 0,
-        totalLikes: posts.reduce((sum, p) => sum + p.like_count, 0),
-        totalComments: posts.reduce((sum, p) => sum + p.comments_count, 0)
+        avgEngagement: posts.length > 0 
+          ? posts.reduce((sum: number, p: any) => sum + p.engagement_rate, 0) / posts.length 
+          : 0,
+        totalLikes: posts.reduce((sum: number, p: any) => sum + p.like_count, 0),
+        totalComments: posts.reduce((sum: number, p: any) => sum + p.comments_count, 0)
       }
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching Instagram analytics:', error)
-    return NextResponse.json({ success: false, error: 'Failed to fetch analytics' }, { status: 500 })
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message || 'Failed to fetch analytics' 
+    }, { status: 500 })
   }
 }
 

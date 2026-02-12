@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         }, { status: 400 })
       }
 
-      const baseUrl = process.env.NEXTAUTH_URL || request.headers.get('origin') || 'http://localhost:3000'
+      const baseUrl = (process.env.NEXTAUTH_URL || request.headers.get('origin') || 'http://localhost:3000').replace(/\/$/, '')
       const mediaUrl = `${baseUrl}/uploads/${fileId}`
       const isVideo = /\.(mp4|mov|avi)$/i.test(fileId)
       
