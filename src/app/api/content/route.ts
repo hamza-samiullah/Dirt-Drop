@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, readdir, stat, mkdir } from 'fs/promises'
+import { writeFile, readdir, stat, mkdir, readFile } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 import { AIService } from '@/lib/services/ai'
 import { InstagramService } from '@/lib/services/instagram'
+import { CloudinaryService } from '@/lib/services/cloudinary'
 
 export const dynamic = 'force-dynamic'
 
@@ -103,14 +104,29 @@ export async function POST(request: NextRequest) {
       if (!accessToken || !businessAccountId) {
         return NextResponse.json({ 
           success: false, 
-          error: 'Instagram credentials not configured. Add INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_BUSINESS_ACCOUNT_ID to .env.local' 
+          error: 'Instagram credentials not configured' 
         }, { status: 400 })
       }
 
-      const baseUrl = (process.env.NEXTAUTH_URL || request.headers.get('origin') || 'http://localhost:3000').replace(/\/$/, '')
-      const mediaUrl = `${baseUrl}/uploads/${fileId}`
       const isVideo = /\.(mp4|mov|avi)$/i.test(fileId)
       
+      // Read file from local storage
+      const filepath = join(UPLOAD_DIR, fileId)
+      if (!existsSync(filepath)) {
+        return NextResponse.json({ 
+          success: false, 
+          error: 'File not found' 
+        }, { status: 404 })
+      }
+
+      const fileBuffer = await readFile(filepath)
+      
+      console.log('Uploading to Cloudinary:', { fileId, isVideo, size: fileBuffer.length })
+      
+      // Upload to Cloudinary (Instagram can access this!)
+      const mediaUrl = await CloudinaryService.uploadMedia(fileBuffer, fileId, isVideo)
+      
+      console.log('Cloudinary URL:', mediaUrl)
       console.log('Posting to Instagram:', { mediaUrl, isVideo, caption })
       
       // Post directly to Instagram
