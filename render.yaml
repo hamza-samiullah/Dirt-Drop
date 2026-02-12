@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: dirt-drop
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: APPSFLYER_API_TOKEN
+        sync: false
+      - key: APPSFLYER_APP_ID
+        sync: false
+      - key: INSTAGRAM_APP_ID
+        sync: false
+      - key: INSTAGRAM_APP_SECRET
+        sync: false
+      - key: INSTAGRAM_ACCESS_TOKEN
+        sync: false
+      - key: INSTAGRAM_BUSINESS_ACCOUNT_ID
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+
+  - type: cron
+    name: instagram-analytics-cron
+    env: node
+    schedule: "0 */6 * * *"
+    buildCommand: npm install
+    startCommand: curl -X GET "https://dirt-drop.onrender.com/api/cron/analytics?secret=$CRON_SECRET"
+    envVars:
+      - key: CRON_SECRET
+        sync: false

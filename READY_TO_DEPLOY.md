@@ -1,16 +1,16 @@
-# ✅ READY FOR VERCEL DEPLOYMENT
+# ✅ READY FOR RENDER DEPLOYMENT
 
 ## 🎉 Project Status: 100% Complete & Deployable
 
-All files configured for Vercel deployment!
+All files configured for Render deployment!
 
 ## 📦 What's Included
 
 ✅ `.env.example` - Environment variables template
 ✅ `.gitignore` - Excludes sensitive files
-✅ `vercel.json` - Vercel configuration with cron
+✅ `render.yaml` - Render configuration
 ✅ `public/uploads/.gitkeep` - Preserves upload directory
-✅ `VERCEL_DEPLOY.md` - Complete deployment guide
+✅ `RENDER_DEPLOY.md` - Complete deployment guide
 ✅ `deploy-check.sh` - Deployment checklist script
 
 ## 🚀 Deploy Now (3 Steps)
@@ -23,18 +23,23 @@ git remote add origin https://github.com/YOUR_USERNAME/dirt-drop.git
 git push -u origin main
 ```
 
-### Step 2: Deploy on Vercel
-1. Go to https://vercel.com/new
-2. Import your GitHub repository
-3. Click "Deploy"
+### Step 2: Deploy on Render
+1. Go to https://render.com
+2. Sign up with GitHub
+3. Click "New +" → "Web Service"
+4. Connect your repository
+5. Configure:
+   - Build: `npm install && npm run build`
+   - Start: `npm start`
+   - Instance: Free
 
 ### Step 3: Add Environment Variables
-In Vercel dashboard → Settings → Environment Variables, add:
+In Render dashboard → Environment, add:
 
 ```
 OPENAI_API_KEY=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
 NEXTAUTH_SECRET=dirt-drop-secret-2024
-NEXTAUTH_URL=https://your-app.vercel.app
+NEXTAUTH_URL=https://dirt-drop.onrender.com
 APPSFLYER_API_TOKEN=eyJhbGciOiJBMjU2S1ciLCJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwidHlwIjoiSldUIiwiemlwIjoiREVGIn0.cVun9LBEFK-ozpsBrQ82p9iIV9Er9vIGAF9FuVF0H9jaiWPuo5-KMQ.6X4e5Ni3JLcO_2vA.j81RlPtorrAjrE-yHqvDfbOGhgryRUB7aGj8kSJVN9BCQDkTNr6AIsG9ovi3tsX03xh2a3LuC1Gh-ISftKw_CgPkfEkNV14nuVusacD6utwb0N6VEX7QAHlYTuPwLUgKxthf6Lzm26N5p2nvumKtOciq8kYlyQIqq8sIHgT07JyoWBQlOG1R2AJYCuB3McJRwftxczSQjwWja5YCqsCUbDL3bXouEjSrQuPqV3LF74CE6qMxMfutxkUZrIA24o70AmX3tHeExphSKOUYxWPJM64cnnfxMmMLnoKfTfUOKteUDTcwg8HM8-_hCNQh_cwOOdpFinKzlW6F7Ud7Fy5otw.PSHrwQeatq_Ah8FnuLG0pA
 APPSFLYER_APP_ID=com.arcfreak.dirtdrop
 INSTAGRAM_APP_ID=898802415967891
@@ -44,13 +49,13 @@ INSTAGRAM_BUSINESS_ACCOUNT_ID=17841476833801694
 CRON_SECRET=sk_cron_secret_change_this_to_random_string_12345
 ```
 
-**IMPORTANT:** Update `NEXTAUTH_URL` with your actual Vercel URL!
+**IMPORTANT:** Update `NEXTAUTH_URL` with your actual Render URL!
 
-Then redeploy.
+Then click "Create Web Service".
 
 ## ✅ After Deployment
 
-Your app will be live at: `https://your-app.vercel.app`
+Your app will be live at: `https://dirt-drop.onrender.com`
 
 Test Instagram posting:
 1. Upload an image
@@ -60,22 +65,23 @@ Test Instagram posting:
 
 ## 📊 Features Working
 
-- ✅ Content upload & management
+- ✅ Content upload & management (persistent storage!)
 - ✅ AI caption generation (OpenAI)
 - ✅ Direct Instagram posting
 - ✅ Analytics dashboard
-- ✅ Auto-collect insights (every 6 hours)
+- ✅ Auto-collect insights (via cron)
 - ✅ AppsFlyer integration
 
 ## 💰 Monthly Cost
 
-- Vercel Hobby: **$0**
+- Render Free: **$0** (sleeps after 15 min)
+- Render Paid: **$7** (always on)
 - OpenAI API: **$5-15**
-- **Total: $5-15/month**
+- **Total: $5-22/month**
 
 ## 📚 Documentation
 
-- **VERCEL_DEPLOY.md** - Full deployment guide
+- **RENDER_DEPLOY.md** - Full deployment guide
 - **PROJECT_COMPLETE.md** - Feature overview
 - **TEST_GUIDE.md** - Testing instructions
 - **GET_INSTAGRAM_ID.md** - Instagram setup
