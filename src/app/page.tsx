@@ -25,85 +25,11 @@ export default function Dashboard() {
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [loading, setLoading] = useState(true)
   const [instagramMetrics, setInstagramMetrics] = useState<InstagramMetrics | null>(null)
-  const [instagramConnected, setInstagramConnected] = useState(false)
   const [appsflyerData, setAppsflyerData] = useState<any>(null)
 
   useEffect(() => {
     loadData()
-    checkInstagramConnection()
   }, [])
-
-  const checkInstagramConnection = () => {
-    const urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.get('instagram_connected') === 'true') {
-      const accessToken = urlParams.get('access_token')
-      if (accessToken) {
-        localStorage.setItem('instagram_access_token', accessToken)
-        setInstagramConnected(true)
-        // Clean URL
-        window.history.replaceState({}, document.title, window.location.pathname)
-      }
-    } else {
-      const savedToken = localStorage.getItem('instagram_access_token')
-      if (savedToken) {
-        setInstagramConnected(true)
-      }
-    }
-  }
-
-  const handleInstagramConnect = async () => {
-    try {
-      const response = await fetch('/api/instagram')
-      const data = await response.json()
-      if (data.authUrl) {
-        window.location.href = data.authUrl
-      }
-    } catch (error) {
-      console.error('Error connecting Instagram:', error)
-    }
-  }
-
-  const triggerInstagramPost = async () => {
-    const webhook_url = process.env.NEXT_PUBLIC_MAKE_INSTAGRAM_WEBHOOK
-
-    if (!webhook_url || webhook_url.includes('YOUR_WEBHOOK_ID')) {
-      alert('Please configure your Make.com webhook URL in .env.local')
-      return
-    }
-
-    const payload = {
-      action: "create_post",
-      content: {
-        caption: `🚀 Our app just hit ${metrics?.totalDownloads} downloads! Thanks to our amazing users in ${geoData[0]?.country} 🎉`,
-        image_url: "https://via.placeholder.com/1080x1080/3b82f6/ffffff?text=App+Milestone",
-        hashtags: ["#mobileapp", "#startup", "#appdownloads", "#success"],
-        post_time: new Date().toISOString()
-      },
-      metrics: {
-        total_installs: metrics?.totalDownloads || 0,
-        daily_installs: metrics?.dailyDownloads || 0,
-        retention_rate: metrics?.retentionRate || 0,
-        top_country: geoData[0]?.country || 'Unknown'
-      }
-    }
-
-    try {
-      const response = await fetch(webhook_url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-
-      if (response.ok) {
-        alert('Instagram post triggered successfully! Check Make.com for execution status.')
-      } else {
-        alert('Failed to trigger post. Check your webhook URL.')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert('Error triggering post. Check console for details.')
-    }
-  }
 
   const loadData = async () => {
     setLoading(true)
@@ -358,14 +284,6 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="flex space-x-2 mb-2">
-                    <button
-                      onClick={triggerInstagramPost}
-                      className="px-3 py-1 bg-pink-600 text-white text-sm rounded-lg hover:bg-pink-700 transition-colors"
-                    >
-                      📸 Post to Instagram
-                    </button>
-                  </div>
                   <p className="text-sm text-neutral-500">Data Source</p>
                   <p className="text-sm font-medium text-neutral-900">
                     AppsFlyer Live Data
@@ -427,11 +345,7 @@ export default function Dashboard() {
         )
 
       case 'instagram':
-        return <InstagramDashboard
-          metrics={instagramMetrics || undefined}
-          isConnected={instagramConnected}
-          onConnect={handleInstagramConnect}
-        />
+        return <InstagramDashboard metrics={instagramMetrics || undefined} />
 
       case 'content':
         return <ContentManager />

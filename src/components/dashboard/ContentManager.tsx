@@ -156,7 +156,12 @@ export default function ContentManager() {
         setCaption('')
         loadContent()
       } else {
-        alert(`❌ ${data.error || 'Failed to post to Instagram'}`)
+        const errorMsg = data.error || 'Failed to post to Instagram'
+        if (errorMsg.includes('publicly accessible')) {
+          alert(`❌ ${errorMsg}\n\n📖 See DEPLOY_NOW.md for instructions`)
+        } else {
+          alert(`❌ ${errorMsg}`)
+        }
       }
     } catch (error) {
       console.error('Error approving content:', error)

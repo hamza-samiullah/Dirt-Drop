@@ -1,6 +1,14 @@
 export class InstagramService {
   static async publishPhoto(imageUrl: string, caption: string, accessToken: string, businessAccountId: string) {
     try {
+      // Check if URL is publicly accessible
+      if (imageUrl.includes('localhost') || imageUrl.includes('127.0.0.1')) {
+        return { 
+          success: false, 
+          error: 'Instagram requires publicly accessible URLs. Deploy to Vercel or use ngrok for testing.' 
+        }
+      }
+
       // Step 1: Create media container
       const containerResponse = await fetch(
         `https://graph.facebook.com/v18.0/${businessAccountId}/media`,
@@ -45,6 +53,14 @@ export class InstagramService {
 
   static async publishReel(videoUrl: string, caption: string, accessToken: string, businessAccountId: string) {
     try {
+      // Check if URL is publicly accessible
+      if (videoUrl.includes('localhost') || videoUrl.includes('127.0.0.1')) {
+        return { 
+          success: false, 
+          error: 'Instagram requires publicly accessible URLs. Deploy to Vercel or use ngrok for testing.' 
+        }
+      }
+
       // Step 1: Create media container for reel
       const containerResponse = await fetch(
         `https://graph.facebook.com/v18.0/${businessAccountId}/media`,

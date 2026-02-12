@@ -28,23 +28,13 @@ export default function InstagramPerformance() {
   const loadAnalytics = async () => {
     setLoading(true)
     try {
-      const accessToken = localStorage.getItem('instagram_access_token')
-      
-      if (!accessToken) {
-        setLoading(false)
-        return
-      }
-
-      const response = await fetch('/api/instagram-analytics', {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
-      })
-      
+      const response = await fetch('/api/instagram-analytics')
       const data = await response.json()
       
       if (data.success) {
-        setPosts(data.posts)
-        setRecommendations(data.recommendations)
-        setStats(data.stats)
+        setPosts(data.posts || [])
+        setRecommendations(data.recommendations || [])
+        setStats(data.stats || { totalPosts: 0, avgEngagement: 0, totalLikes: 0, totalComments: 0 })
       }
     } catch (error) {
       console.error('Error loading analytics:', error)
@@ -73,16 +63,6 @@ export default function InstagramPerformance() {
     return (
       <div className="flex items-center justify-center h-96">
         <RefreshCw className="w-12 h-12 text-primary-600 animate-spin" />
-      </div>
-    )
-  }
-
-  if (!localStorage.getItem('instagram_access_token')) {
-    return (
-      <div className="bg-white rounded-xl p-8 shadow-custom border border-neutral-200 text-center">
-        <BarChart3 className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-neutral-900 mb-2">Connect Instagram</h3>
-        <p className="text-neutral-600">Connect your Instagram account to view performance analytics</p>
       </div>
     )
   }
@@ -138,50 +118,63 @@ export default function InstagramPerformance() {
             Generate New
           </button>
         </div>
-        <div className="space-y-2">
-          {recommendations.map((rec, index) => (
-            <div key={index} className="flex items-start space-x-2 bg-white bg-opacity-50 rounded-lg p-3">
-              <span className="text-primary-600 font-bold">{index + 1}.</span>
-              <p className="text-neutral-700">{rec}</p>
-            </div>
-          ))}
-        </div>
+        {recommendations.length === 0 ? (
+          <div className="text-center py-4">
+            <p className="text-neutral-600">Click "Generate New" to get AI-powered recommendations</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {recommendations.map((rec, index) => (
+              <div key={index} className="flex items-start space-x-2 bg-white bg-opacity-50 rounded-lg p-3">
+                <span className="text-primary-600 font-bold">{index + 1}.</span>
+                <p className="text-neutral-700">{rec}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Recent Posts Performance */}
       <div className="bg-white rounded-xl p-6 shadow-custom border border-neutral-200">
         <h3 className="text-lg font-semibold text-neutral-900 mb-4">Recent Posts Performance</h3>
-        <div className="space-y-4">
-          {posts.slice(0, 5).map((post) => (
-            <div key={post.id} className="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors">
-              <img
-                src={post.media_url}
-                alt="Post"
-                className="w-20 h-20 object-cover rounded-lg"
-              />
-              <div className="flex-1">
-                <p className="text-sm text-neutral-700 line-clamp-2">{post.caption}</p>
-                <p className="text-xs text-neutral-500 mt-1">
-                  {new Date(post.timestamp).toLocaleDateString()}
-                </p>
+        {posts.length === 0 ? (
+          <div className="text-center py-8">
+            <Eye className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
+            <p className="text-neutral-600">No posts yet. Upload content in Content Manager to get started!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {posts.slice(0, 5).map((post) => (
+              <div key={post.id} className="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors">
+                <img
+                  src={post.media_url}
+                  alt="Post"
+                  className="w-20 h-20 object-cover rounded-lg"
+                />
+                <div className="flex-1">
+                  <p className="text-sm text-neutral-700 line-clamp-2">{post.caption}</p>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    {new Date(post.timestamp).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-4 text-sm">
+                  <div className="text-center">
+                    <Heart className="w-4 h-4 text-red-500 mx-auto mb-1" />
+                    <span className="font-medium">{post.like_count}</span>
+                  </div>
+                  <div className="text-center">
+                    <MessageCircle className="w-4 h-4 text-blue-500 mx-auto mb-1" />
+                    <span className="font-medium">{post.comments_count}</span>
+                  </div>
+                  <div className="text-center">
+                    <TrendingUp className="w-4 h-4 text-green-500 mx-auto mb-1" />
+                    <span className="font-medium">{post.engagement_rate.toFixed(1)}%</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="text-center">
-                  <Heart className="w-4 h-4 text-red-500 mx-auto mb-1" />
-                  <span className="font-medium">{post.like_count}</span>
-                </div>
-                <div className="text-center">
-                  <MessageCircle className="w-4 h-4 text-blue-500 mx-auto mb-1" />
-                  <span className="font-medium">{post.comments_count}</span>
-                </div>
-                <div className="text-center">
-                  <TrendingUp className="w-4 h-4 text-green-500 mx-auto mb-1" />
-                  <span className="font-medium">{post.engagement_rate.toFixed(1)}%</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

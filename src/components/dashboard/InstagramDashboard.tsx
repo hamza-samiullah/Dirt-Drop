@@ -6,19 +6,17 @@ import { InstagramMetrics } from '@/lib/integrations/instagram'
 
 interface InstagramDashboardProps {
   metrics?: InstagramMetrics
-  isConnected: boolean
-  onConnect: () => void
 }
 
-export default function InstagramDashboard({ metrics, isConnected, onConnect }: InstagramDashboardProps) {
+export default function InstagramDashboard({ metrics }: InstagramDashboardProps) {
   const [contentSuggestions, setContentSuggestions] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (isConnected && metrics) {
+    if (metrics) {
       generateContentSuggestions()
     }
-  }, [isConnected, metrics])
+  }, [metrics])
 
   const generateContentSuggestions = async () => {
     setLoading(true)
@@ -40,71 +38,6 @@ export default function InstagramDashboard({ metrics, isConnected, onConnect }: 
       console.error('Error generating content suggestions:', error)
     }
     setLoading(false)
-  }
-
-  if (!isConnected) {
-    return (
-      <div className="space-y-8">
-        <div className="bg-white rounded-xl p-6 shadow-custom border border-neutral-200">
-          <h1 className="text-2xl font-bold text-neutral-900">Instagram Integration</h1>
-          <p className="text-neutral-600 mt-1">Connect your Instagram Business account to start automating posts</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-8 border border-pink-200">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Instagram className="w-10 h-10 text-white" />
-            </div>
-            
-            <h2 className="text-2xl font-bold text-neutral-900 mb-4">
-              Connect Your Instagram Business Account
-            </h2>
-            
-            <p className="text-neutral-600 mb-8 leading-relaxed">
-              Integrate your Instagram Business account to automatically post AI-generated content, 
-              track performance metrics, and optimize your social media strategy based on app analytics.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Plus className="w-6 h-6 text-pink-600" />
-                </div>
-                <h3 className="font-semibold text-neutral-900 mb-2">Auto-Post Content</h3>
-                <p className="text-sm text-neutral-600">AI generates and schedules posts based on your app performance</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
-                </div>
-                <h3 className="font-semibold text-neutral-900 mb-2">Track Performance</h3>
-                <p className="text-sm text-neutral-600">Monitor engagement and correlate with app downloads</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Settings className="w-6 h-6 text-blue-600" />
-                </div>
-                <h3 className="font-semibold text-neutral-900 mb-2">Smart Optimization</h3>
-                <p className="text-sm text-neutral-600">AI optimizes posting times and content for maximum impact</p>
-              </div>
-            </div>
-
-            <button
-              onClick={onConnect}
-              className="px-8 py-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-lg hover:from-pink-700 hover:to-purple-700 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              Connect Instagram Business Account
-            </button>
-            
-            <p className="text-xs text-neutral-500 mt-4">
-              Secure OAuth integration • No password required • Revoke access anytime
-            </p>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -245,14 +178,11 @@ export default function InstagramDashboard({ metrics, isConnected, onConnect }: 
       <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">Make.com Automation</h3>
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2">✅ Instagram Connected</h3>
             <p className="text-neutral-600">
-              Your Instagram posting automation is ready. Configure Make.com scenarios to start auto-posting.
+              Your Instagram is connected via Graph API. Use Content Manager to upload and post content.
             </p>
           </div>
-          <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium">
-            View Setup Guide
-          </button>
         </div>
       </div>
     </div>
