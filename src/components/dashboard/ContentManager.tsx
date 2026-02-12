@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Upload, Image, Video, Calendar, Check, X, RefreshCw, Plus } from 'lucide-react'
+import { Upload, Video, Trash2, Check, X, RefreshCw, Plus, Sparkles } from 'lucide-react'
 
 interface ContentItem {
   id: string
@@ -10,8 +10,16 @@ interface ContentItem {
   thumbnailUrl: string
   mimeType: string
   createdTime: string
+  size: number
   status: 'draft' | 'approved' | 'posted'
   caption?: string
+  suggestions?: {
+    captions: string[]
+    hashtags: string[]
+    bestPostingTime: string
+    targetAudience: string
+    engagementPrediction: string
+  }
 }
 
 export default function ContentManager() {
@@ -19,8 +27,8 @@ export default function ContentManager() {
   const [loading, setLoading] = useState(true)
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null)
   const [caption, setCaption] = useState('')
-  const [scheduledTime, setScheduledTime] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [generatingAI, setGeneratingAI] = useState(false)
 
   useEffect(() => {
     loadContent()
@@ -32,7 +40,7 @@ export default function ContentManager() {
       const response = await fetch('/api/content')
       const data = await response.json()
       if (data.success) {
-        setContent(data.content)
+        setContent(data.content || [])
       }
     } catch (error) {
       console.error('Error loading content:', error)
@@ -64,7 +72,7 @@ export default function ContentManager() {
         alert('✅ File uploaded successfully!')
         loadContent()
       } else {
-        alert('❌ Failed to upload file')
+        alert(`❌ ${data.error || 'Failed to upload file'}`)
       }
     } catch (error) {
       console.error('Error uploading file:', error)
@@ -74,7 +82,62 @@ export default function ContentManager() {
     event.target.value = ''
   }
 
+  const generateAICaptions = async (item: ContentItem) => {
+    setGeneratingAI(true)
+    try {
+      const formData = new FormData()
+      const response = await fetch(item.url)
+      const blob = await response.blob()
+      const file = new File([blob], item.name, { type: item.mimeType })
+      formData.append('file', file)
+
+      const aiResponse = await fetch('/api/content', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await aiResponse.json()
+      if (data.success && data.suggestions) {
+        setSelectedItem({ ...item, suggestions: data.suggestions })
+        setCaption(data.suggestions.captions[0])
+      }
+    } catch (error) {
+      console.error('Error generating AI captions:', error)
+      alert('❌ Failed to generate AI captions')
+    }
+    setGeneratingAI(false)
+  }
+
+  const deleteContent = async (item: ContentItem, event: React.MouseEvent) => {
+    event.stopPropagation()
+    if (!confirm(`Delete ${item.name}?`)) return
+
+    try {
+      const response = await fetch('/api/content', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId: item.id }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        alert('✅ Content deleted')
+        loadContent()
+      } else {
+        alert('❌ Failed to delete content')
+      }
+    } catch (error) {
+      console.error('Error deleting content:', error)
+      alert('❌ Error deleting content')
+    }
+  }
+
   const approveAndPost = async (item: ContentItem) => {
+    if (!caption.trim()) {
+      alert('Please enter a caption')
+      return
+    }
+
     try {
       const response = await fetch('/api/content', {
         method: 'POST',
@@ -82,20 +145,18 @@ export default function ContentManager() {
         body: JSON.stringify({
           action: 'approve',
           fileId: item.id,
-          caption: caption || `Check out our latest update! 🚀 #app #mobile`,
-          scheduledTime: scheduledTime || new Date().toISOString(),
+          caption: caption,
         }),
       })
 
       const data = await response.json()
       if (data.success) {
-        alert('✅ Content approved and sent to Instagram!')
+        alert(`✅ Posted to Instagram! Post ID: ${data.postId}`)
         setSelectedItem(null)
         setCaption('')
-        setScheduledTime('')
         loadContent()
       } else {
-        alert('❌ Failed to approve content')
+        alert(`❌ ${data.error || 'Failed to post to Instagram'}`)
       }
     } catch (error) {
       console.error('Error approving content:', error)
@@ -144,30 +205,38 @@ export default function ContentManager() {
           </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-sm text-blue-800">
-            📸 <strong>Upload files directly</strong> or add them to Google Drive folder to see them here.
-          </p>
-        </div>
-
         {content.length === 0 ? (
           <div className="text-center py-12 bg-neutral-50 rounded-lg">
             <Upload className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-neutral-900 mb-2">No content found</h3>
-            <p className="text-neutral-600">Upload images or videos to your Google Drive folder</p>
+            <h3 className="text-lg font-medium text-neutral-900 mb-2">No content uploaded yet</h3>
+            <p className="text-neutral-600 mb-4">Upload images or videos to get started</p>
+            <label className="inline-block px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors cursor-pointer">
+              <Plus className="w-4 h-4 inline mr-2" />
+              Upload Your First File
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={handleFileUpload}
+                disabled={uploading}
+                className="hidden"
+              />
+            </label>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {content.map((item) => (
               <div
                 key={item.id}
-                className="bg-white border-2 border-neutral-200 rounded-xl overflow-hidden hover:shadow-lg transition-all cursor-pointer"
-                onClick={() => setSelectedItem(item)}
+                className="bg-white border-2 border-neutral-200 rounded-xl overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
+                onClick={() => {
+                  setSelectedItem(item)
+                  setCaption('')
+                }}
               >
                 <div className="aspect-square bg-neutral-100 relative">
                   {item.mimeType.includes('image') ? (
                     <img
-                      src={item.thumbnailUrl || `https://drive.google.com/thumbnail?id=${item.id}`}
+                      src={item.url}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
@@ -176,13 +245,20 @@ export default function ContentManager() {
                       <Video className="w-16 h-16 text-neutral-400" />
                     </div>
                   )}
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute top-2 right-2 flex space-x-2">
                     {item.mimeType.includes('image') ? (
                       <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs">Image</span>
                     ) : (
                       <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs">Video</span>
                     )}
                   </div>
+                  <button
+                    onClick={(e) => deleteContent(item, e)}
+                    className="absolute top-2 left-2 bg-red-500 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
                 <div className="p-4">
                   <h3 className="font-medium text-neutral-900 truncate">{item.name}</h3>
@@ -213,7 +289,7 @@ export default function ContentManager() {
               <div className="aspect-square bg-neutral-100 rounded-lg mb-4 overflow-hidden">
                 {selectedItem.mimeType.includes('image') ? (
                   <img
-                    src={`https://drive.google.com/thumbnail?id=${selectedItem.id}&sz=w1000`}
+                    src={selectedItem.url}
                     alt={selectedItem.name}
                     className="w-full h-full object-cover"
                   />
@@ -225,9 +301,44 @@ export default function ContentManager() {
               </div>
 
               <div className="space-y-4">
+                {!selectedItem.suggestions && (
+                  <button
+                    onClick={() => generateAICaptions(selectedItem)}
+                    disabled={generatingAI}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors font-medium"
+                  >
+                    <Sparkles className="w-5 h-5 inline mr-2" />
+                    {generatingAI ? 'Generating AI Captions...' : 'Generate AI Captions'}
+                  </button>
+                )}
+
+                {selectedItem.suggestions && (
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border-2 border-purple-200">
+                    <h4 className="font-semibold text-neutral-900 mb-3 flex items-center">
+                      <Sparkles className="w-5 h-5 text-purple-600 mr-2" />
+                      AI Suggestions
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedItem.suggestions.captions.map((cap, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCaption(cap)}
+                          className="w-full text-left p-3 bg-white rounded-lg hover:bg-purple-50 transition-colors text-sm"
+                        >
+                          {cap}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-xs text-neutral-600">
+                      <p><strong>Hashtags:</strong> {selectedItem.suggestions.hashtags.join(' ')}</p>
+                      <p className="mt-1"><strong>Best time:</strong> {selectedItem.suggestions.bestPostingTime}</p>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Caption
+                    Caption *
                   </label>
                   <textarea
                     value={caption}
@@ -238,22 +349,11 @@ export default function ContentManager() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Schedule Time (Optional)
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={scheduledTime}
-                    onChange={(e) => setScheduledTime(e.target.value)}
-                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  />
-                </div>
-
                 <div className="flex space-x-3">
                   <button
                     onClick={() => approveAndPost(selectedItem)}
-                    className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                    disabled={!caption.trim()}
+                    className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Check className="w-5 h-5 inline mr-2" />
                     Approve & Post

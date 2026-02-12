@@ -19,12 +19,40 @@ export interface InstagramInsights {
 }
 
 export class InstagramAnalyticsService {
-  static async getRecentPosts(accessToken: string, limit: number = 10): Promise<InstagramPost[]> {
+  static async getRecentPosts(accessToken: string, businessAccountId: string, limit: number = 10): Promise<InstagramPost[]> {
     try {
+      // First get the business account ID if not provided
+      let accountId = businessAccountId
+      if (!accountId) {
+        const meResponse = await fetch(
+          `https://graph.facebook.com/v18.0/me/accounts?access_token=${accessToken}`
+        )
+        const meData = await meResponse.json()
+        const pageId = meData.data?.[0]?.id
+        
+        if (pageId) {
+          const igResponse = await fetch(
+            `https://graph.facebook.com/v18.0/${pageId}?fields=instagram_business_account&access_token=${accessToken}`
+          )
+          const igData = await igResponse.json()
+          accountId = igData.instagram_business_account?.id
+        }
+      }
+
+      if (!accountId) {
+        console.error('No Instagram Business Account found')
+        return []
+      }
+
       const response = await fetch(
-        `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count&limit=${limit}&access_token=${accessToken}`
+        `https://graph.facebook.com/v18.0/${accountId}/media?fields=id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count&limit=${limit}&access_token=${accessToken}`
       )
       const data = await response.json()
+      
+      if (data.error) {
+        console.error('Instagram API error:', data.error)
+        return []
+      }
       
       return (data.data || []).map((post: any) => ({
         ...post,

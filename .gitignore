@@ -40,3 +40,7 @@ next-env.d.ts
 # Logs
 logs
 *.log
+
+# Uploaded content
+/public/uploads/*
+!/public/uploads/.gitkeep

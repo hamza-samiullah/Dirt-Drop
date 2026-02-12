@@ -19,19 +19,31 @@ export class GoogleDriveService {
   private static async getDriveClient() {
     if (this.drive) return this.drive
 
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_DRIVE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_DRIVE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      },
-      scopes: [
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/drive'
-      ],
-    })
+    const clientEmail = process.env.GOOGLE_DRIVE_CLIENT_EMAIL
+    const privateKey = process.env.GOOGLE_DRIVE_PRIVATE_KEY?.replace(/\\n/g, '\n')
 
-    this.drive = google.drive({ version: 'v3', auth })
-    return this.drive
+    if (!clientEmail || !privateKey) {
+      throw new Error('Google Drive credentials not configured. Please set GOOGLE_DRIVE_CLIENT_EMAIL and GOOGLE_DRIVE_PRIVATE_KEY in .env.local')
+    }
+
+    try {
+      const auth = new google.auth.GoogleAuth({
+        credentials: {
+          client_email: clientEmail,
+          private_key: privateKey,
+        },
+        scopes: [
+          'https://www.googleapis.com/auth/drive.file',
+          'https://www.googleapis.com/auth/drive'
+        ],
+      })
+
+      this.drive = google.drive({ version: 'v3', auth })
+      return this.drive
+    } catch (error) {
+      console.error('Error initializing Google Drive client:', error)
+      throw new Error('Failed to initialize Google Drive. Check your credentials.')
+    }
   }
 
   static async listContent(folderId?: string): Promise<ContentItem[]> {
@@ -66,6 +78,14 @@ export class GoogleDriveService {
       const drive = await this.getDriveClient()
       const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID
 
+      if (!folderId) {
+        throw new Error('GOOGLE_DRIVE_FOLDER_ID is not configured in environment variables')
+      }
+
+      const { Readable } = require('stream')
+
+      console.log(`Uploading file: ${fileName} (${mimeType}) to folder: ${folderId}`)
+
       const response = await drive.files.create({
         requestBody: {
           name: fileName,
@@ -74,10 +94,12 @@ export class GoogleDriveService {
         },
         media: {
           mimeType: mimeType,
-          body: Buffer.from(fileBuffer),
+          body: Readable.from(fileBuffer),
         },
         fields: 'id, webViewLink',
       })
+
+      console.log(`File uploaded successfully. File ID: ${response.data.id}`)
 
       await drive.permissions.create({
         fileId: response.data.id,
@@ -87,10 +109,17 @@ export class GoogleDriveService {
         },
       })
 
+      console.log(`Permissions set to public for file: ${response.data.id}`)
+
       return response.data.id
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading to Google Drive:', error)
-      throw error
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        errors: error.errors,
+      })
+      throw new Error(`Failed to upload to Google Drive: ${error.message || 'Unknown error'}`)
     }
   }
 

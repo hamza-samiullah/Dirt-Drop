@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from '@/components/dashboard/Sidebar'
 import MetricCards from '@/components/dashboard/MetricCards'
 import AIInsights from '@/components/dashboard/AIInsights'
+import AIContentSuggestions from '@/components/dashboard/AIContentSuggestions'
 import RecentActivity from '@/components/dashboard/RecentActivity'
 import InstagramDashboard from '@/components/dashboard/InstagramDashboard'
 import ContentManager from '@/components/dashboard/ContentManager'
@@ -64,12 +65,12 @@ export default function Dashboard() {
 
   const triggerInstagramPost = async () => {
     const webhook_url = process.env.NEXT_PUBLIC_MAKE_INSTAGRAM_WEBHOOK
-    
+
     if (!webhook_url || webhook_url.includes('YOUR_WEBHOOK_ID')) {
       alert('Please configure your Make.com webhook URL in .env.local')
       return
     }
-    
+
     const payload = {
       action: "create_post",
       content: {
@@ -85,14 +86,14 @@ export default function Dashboard() {
         top_country: geoData[0]?.country || 'Unknown'
       }
     }
-    
+
     try {
       const response = await fetch(webhook_url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      
+
       if (response.ok) {
         alert('Instagram post triggered successfully! Check Make.com for execution status.')
       } else {
@@ -106,18 +107,18 @@ export default function Dashboard() {
 
   const loadData = async () => {
     setLoading(true)
-    
+
     try {
       // Load AppsFlyer data
       const response = await fetch('/api/appsflyer')
       const data = await response.json()
       setAppsflyerData(data)
-      
+
       // Convert AppsFlyer data to our metrics format
       const totalInstalls = data.totalInstalls || 34
       const organicInstalls = data.organicInstalls || 12
       const totalRevenue = data.totalRevenue || 850
-      
+
       setMetrics({
         totalDownloads: totalInstalls,
         dailyDownloads: data.dailyData ? data.dailyData[data.dailyData.length - 1]?.installs || 0 : 0,
@@ -128,7 +129,7 @@ export default function Dashboard() {
         averageRating: 4.2,
         totalRevenue: totalRevenue
       })
-      
+
       // Update chart data with real AppsFlyer daily data
       if (data.dailyData && data.dailyData.length > 0) {
         setChartData(data.dailyData.map((item: any) => ({
@@ -144,9 +145,9 @@ export default function Dashboard() {
         for (let i = 29; i >= 0; i--) {
           const date = new Date()
           date.setDate(date.getDate() - i)
-          const installs = i < 5 ? Math.max(0, avgDaily + Math.floor(Math.random() * 3) - 1) : 
-                          i < 15 ? Math.max(0, Math.floor(avgDaily * 0.8) + Math.floor(Math.random() * 2)) :
-                          Math.max(0, Math.floor(avgDaily * 0.6) + Math.floor(Math.random() * 2))
+          const installs = i < 5 ? Math.max(0, avgDaily + Math.floor(Math.random() * 3) - 1) :
+            i < 15 ? Math.max(0, Math.floor(avgDaily * 0.8) + Math.floor(Math.random() * 2)) :
+              Math.max(0, Math.floor(avgDaily * 0.6) + Math.floor(Math.random() * 2))
           dailyData.push({
             date: date.toISOString().split('T')[0],
             downloads: installs,
@@ -156,7 +157,7 @@ export default function Dashboard() {
         }
         setChartData(dailyData)
       }
-      
+
       // Set geographic data - always ensure data exists
       setGeoData([
         { country: 'Australia', downloads: Math.floor(totalInstalls * 0.59), percentage: 59 },
@@ -164,7 +165,7 @@ export default function Dashboard() {
         { country: 'United Kingdom', downloads: Math.floor(totalInstalls * 0.12), percentage: 12 },
         { country: 'Canada', downloads: Math.floor(totalInstalls * 0.05), percentage: 5 }
       ])
-      
+
       // Update device data based on real data or realistic estimates
       if (data.mediaSourceData) {
         const iosInstalls = Math.floor(totalInstalls * 0.6) // Typical iOS/Android split
@@ -181,11 +182,11 @@ export default function Dashboard() {
           { platform: 'Android', downloads: androidInstalls, percentage: 40 }
         ])
       }
-      
+
       // Generate realistic recent activity based on real data
       const recentActivities: ActivityItem[] = []
       const countries = ['Australia', 'United States', 'United Kingdom', 'Canada']
-      
+
       // Add recent downloads
       for (let i = 0; i < 3; i++) {
         const minutesAgo = Math.floor(Math.random() * 120) + 1
@@ -197,7 +198,7 @@ export default function Dashboard() {
           timestamp: `${minutesAgo} minutes ago`
         })
       }
-      
+
       // Add recent signups
       for (let i = 0; i < 2; i++) {
         const hoursAgo = Math.floor(Math.random() * 6) + 1
@@ -208,14 +209,14 @@ export default function Dashboard() {
           timestamp: `${hoursAgo} hours ago`
         })
       }
-      
+
       setActivities(recentActivities)
-      
+
       // Generate AI insights with real data
       const aiResponse = await fetch('/api/ai-insights', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           type: 'insights',
           appId: 'dirt-drop-app', // You can make this configurable
           data: {
@@ -228,7 +229,7 @@ export default function Dashboard() {
           }
         })
       })
-      
+
       if (aiResponse.ok) {
         const aiData = await aiResponse.json()
         setInsights(aiData.data || [])
@@ -266,7 +267,7 @@ export default function Dashboard() {
         ]
         setInsights(realInsights)
       }
-      
+
     } catch (error) {
       console.error('Error loading data:', error)
       // Use realistic fallback data
@@ -281,7 +282,7 @@ export default function Dashboard() {
         averageRating: 4.2,
         totalRevenue: 850
       })
-      
+
       // Generate realistic fallback data
       const dailyData = []
       for (let i = 29; i >= 0; i--) {
@@ -296,25 +297,25 @@ export default function Dashboard() {
         })
       }
       setChartData(dailyData)
-      
+
       setGeoData([
         { country: 'Australia', downloads: 20, percentage: 59 },
         { country: 'United States', downloads: 8, percentage: 24 },
         { country: 'United Kingdom', downloads: 4, percentage: 12 },
         { country: 'Canada', downloads: 2, percentage: 5 }
       ])
-      
+
       setDeviceData([
         { platform: 'iOS', downloads: 20, percentage: 60 },
         { platform: 'Android', downloads: 14, percentage: 40 }
       ])
-      
+
       setActivities([
         { id: '1', type: 'download' as const, description: 'New app download from Australia', timestamp: '5 minutes ago' },
         { id: '2', type: 'signup' as const, description: 'User completed signup process', timestamp: '1 hour ago' },
         { id: '3', type: 'download' as const, description: 'New app download from United States', timestamp: '2 hours ago' }
       ])
-      
+
       setInsights([
         {
           id: '1',
@@ -327,7 +328,7 @@ export default function Dashboard() {
         }
       ])
     }
-    
+
     setLoading(false)
   }
 
@@ -358,7 +359,7 @@ export default function Dashboard() {
                 </div>
                 <div className="text-right">
                   <div className="flex space-x-2 mb-2">
-                    <button 
+                    <button
                       onClick={triggerInstagramPost}
                       className="px-3 py-1 bg-pink-600 text-white text-sm rounded-lg hover:bg-pink-700 transition-colors"
                     >
@@ -412,7 +413,7 @@ export default function Dashboard() {
               <DownloadsChart data={chartData} />
               <GeographicChart data={geoData} />
             </div>
-            
+
             {/* AppsFlyer Raw Data */}
             <div className="bg-white rounded-xl p-6 shadow-custom border border-neutral-200">
               <h3 className="text-lg font-semibold text-neutral-900 mb-4">AppsFlyer Raw Data</h3>
@@ -426,8 +427,8 @@ export default function Dashboard() {
         )
 
       case 'instagram':
-        return <InstagramDashboard 
-          metrics={instagramMetrics || undefined} 
+        return <InstagramDashboard
+          metrics={instagramMetrics || undefined}
           isConnected={instagramConnected}
           onConnect={handleInstagramConnect}
         />
@@ -442,10 +443,11 @@ export default function Dashboard() {
         return (
           <div className="space-y-8">
             <div className="bg-white rounded-xl p-6 shadow-custom border border-neutral-200">
-              <h1 className="text-2xl font-bold text-neutral-900">AI Insights</h1>
-              <p className="text-neutral-600 mt-1">AI-powered recommendations based on your app data</p>
+              <h1 className="text-2xl font-bold text-neutral-900">AI Insights & Content Ideas</h1>
+              <p className="text-neutral-600 mt-1">AI-powered recommendations and daily content suggestions</p>
             </div>
             <AIInsights insights={insights} />
+            <AIContentSuggestions />
           </div>
         )
 
@@ -464,7 +466,7 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen bg-neutral-50">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">

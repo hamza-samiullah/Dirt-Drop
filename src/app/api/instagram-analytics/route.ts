@@ -7,12 +7,13 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     const accessToken = request.headers.get('authorization')?.replace('Bearer ', '')
+    const businessAccountId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || ''
     
     if (!accessToken) {
       return NextResponse.json({ success: false, error: 'No access token' }, { status: 401 })
     }
 
-    const posts = await InstagramAnalyticsService.getRecentPosts(accessToken, 10)
+    const posts = await InstagramAnalyticsService.getRecentPosts(accessToken, businessAccountId, 10)
     const recommendations = await InstagramAnalyticsService.generateAIRecommendations(posts)
 
     return NextResponse.json({ 
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
       recommendations,
       stats: {
         totalPosts: posts.length,
-        avgEngagement: posts.reduce((sum, p) => sum + p.engagement_rate, 0) / posts.length,
+        avgEngagement: posts.length > 0 ? posts.reduce((sum, p) => sum + p.engagement_rate, 0) / posts.length : 0,
         totalLikes: posts.reduce((sum, p) => sum + p.like_count, 0),
         totalComments: posts.reduce((sum, p) => sum + p.comments_count, 0)
       }
