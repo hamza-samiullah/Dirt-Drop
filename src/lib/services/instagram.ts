@@ -26,11 +26,23 @@ export class InstagramService {
       )
 
       const containerData = await containerResponse.json()
-      console.log('Container response:', containerData)
+      console.log('Container response:', JSON.stringify(containerData, null, 2))
       
       if (containerData.error) {
         console.error('Container error:', containerData.error)
-        throw new Error(containerData.error.message)
+        
+        // Provide helpful error message
+        let errorMsg = containerData.error.message
+        if (containerData.error.error_user_msg) {
+          errorMsg = `${errorMsg}\n\nDetails: ${containerData.error.error_user_msg}`
+        }
+        
+        // Check for common issues
+        if (errorMsg.includes('media URI')) {
+          errorMsg += '\n\nPossible fixes:\n1. Image might be too large (max 8MB)\n2. Image format issue (try JPG instead of PNG)\n3. Image not publicly accessible\n4. Try uploading a different image'
+        }
+        
+        throw new Error(errorMsg)
       }
 
       const creationId = containerData.id
