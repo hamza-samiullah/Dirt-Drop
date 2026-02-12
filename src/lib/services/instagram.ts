@@ -47,6 +47,10 @@ export class InstagramService {
 
       const creationId = containerData.id
 
+      // Wait for Instagram to process the image (2-5 seconds)
+      console.log('Waiting for Instagram to process image...')
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
       // Step 2: Publish the container
       const publishResponse = await fetch(
         `https://graph.facebook.com/v18.0/${businessAccountId}/media_publish`,
